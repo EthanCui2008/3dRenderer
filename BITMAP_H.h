@@ -19,16 +19,16 @@ private:
 
         unsigned char bmpHeader[54] = {
             'B', 'M',
-            static_cast<unsigned char>(fileSize), static_cast<unsigned char>(fileSize >> 8), static_cast<unsigned char>(fileSize >> 16), static_cast<unsigned char>(fileSize >> 24),
+            (unsigned char) (fileSize), (unsigned char) (fileSize >> 8), (unsigned char) (fileSize >> 16), (unsigned char) (fileSize >> 24),
             0, 0, 0, 0,
             54, 0, 0, 0,
             40, 0, 0, 0,
-            static_cast<unsigned char>(width), static_cast<unsigned char>(width >> 8), static_cast<unsigned char>(width >> 16), static_cast<unsigned char>(width >> 24),
-            static_cast<unsigned char>(height), static_cast<unsigned char>(height >> 8), static_cast<unsigned char>(height >> 16), static_cast<unsigned char>(height >> 24),
+            (unsigned char) (width), (unsigned char) (width >> 8), (unsigned char) (width >> 16), (unsigned char) (width >> 24),
+            (unsigned char) (height), (unsigned char) (height >> 8), (unsigned char) (height >> 16), (unsigned char) (height >> 24),
             1, 0,
             24, 0,
             0, 0, 0, 0,
-            static_cast<unsigned char>(imageSize), static_cast<unsigned char>(imageSize >> 8), static_cast<unsigned char>(imageSize >> 16), static_cast<unsigned char>(imageSize >> 24),
+            (unsigned char) (imageSize), (unsigned char) (imageSize >> 8), (unsigned char) (imageSize >> 16), (unsigned char) (imageSize >> 24),
             0, 0, 0, 0,
             0, 0, 0, 0
         };

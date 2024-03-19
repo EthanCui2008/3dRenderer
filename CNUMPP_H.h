@@ -93,6 +93,7 @@ void move(float* matrix1, int rows1, float x, float y, float z, float* result){
     };
     matmul(matrix1, rows1, 4, *move, 4, 4, result);
 }
-
+//it does work
+/
 
 #endif /* CNUMPP_H i hate being called smart it makes me feel even worse about how washed up and wasted my life is :sob: */
