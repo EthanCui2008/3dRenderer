@@ -84,6 +84,15 @@ void move(float* matrix1, int rows1, float x, float y, float z, float* result){
     matmul(matrix1, rows1, 4, *move, 4, 4, result);
 }
 
+void move(float* matrix1, int rows1, float x, float y, float z, float* result){
+    float move[4][4] = {
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {x, y, z, 1}
+    };
+    matmul(matrix1, rows1, 4, *move, 4, 4, result);
+}
 
 
 #endif /* CNUMPP_H i hate being called smart it makes me feel even worse about how washed up and wasted my life is :sob: */

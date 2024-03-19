@@ -6,7 +6,7 @@
 
 int main() {
     Bitmap bitmap(256, 256);
-    float scalar = 0.3;
+    float scalar = 0.7;
     float cube[8][4] = {
                 {1, 1, 1,1},
                 {1, 1, -1,1},
@@ -22,8 +22,9 @@ int main() {
                                             {5,7},{5,1},{5,4},
                                             {3,1},{3,7},{3,2}
                                             };
+    
     float result[8][4];
-    move(*cube, 8, 0, 0, 100, *result);
+    move(*cube, 8, 0, 0, 5, *result);
     for(auto i:lines){
         float x1 = (result[i.first][0]*scalar);
         float y1 = (result[i.first][1]*scalar);
