@@ -55,6 +55,16 @@ void yrotate(float* matrix1, int rows1, int ydeg, float* result){
     matmul(matrix1, rows1, 4, *yRotation, 4, 4, result);
 }
 
+void move(float* matrix1, int rows1, float x, float y, float z, float* result){
+    float move[4][4] = {
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {x, y, z, 1}
+    };
+
+    matmul(matrix1, rows1, 4, *move, 4, 4, result);
+}
 void zrotate(float* matrix1, int rows1, int zdeg, float* result){
     float zRad = zdeg * M_PI / 180.0;
     float sinZ = std::sin(zRad); float cosZ = std::cos(zRad);
@@ -68,15 +78,23 @@ void zrotate(float* matrix1, int rows1, int zdeg, float* result){
     matmul(matrix1, rows1, 4, *zRotation, 4, 4, result);
 }
 
-void move(float* matrix1, int rows1, float x, float y, float z, float* result){
-    float move[4][4] = {
-        {1, 0, 0, 0},
-        {0, 1, 0, 0},
-        {0, 0, 1, 0},
-        {x, y, z, 1}
-    };
-    matmul(matrix1, rows1, 4, *move, 4, 4, result);
+void perstrans(float* matrix1, int rows1, float n, float f, float* result){
+    float project[4][4] = {
+        {n, 0, 0, 0},
+        {0, n, 0, 0},
+        {0, 0, (f+n), 1},
+        {0, 0, -1*f*n, 0}
+    }; //not actually needed because we don't keep track of object stacking
+    matmul(matrix1, rows1, 4, *project, 4, 4, result);
 }
 
-
+void scale(float* matrix1, int rows1, float x, float y, float z, float* result){
+    float scale[4][4] = {
+        {x, 0, 0, 0},
+        {0, y, 0, 0},
+        {0, 0, z, 0},
+        {0, 0, 0, 1}
+    };
+    matmul(matrix1, rows1, 4, *scale, 4, 4, result);
+}
 #endif /* CNUMPP_H i hate being called smart it makes me feel even worse about how washed up and wasted my life is :sob: */
