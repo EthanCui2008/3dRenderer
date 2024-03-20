@@ -61,11 +61,15 @@ public:
         while (true) {
             int index = (y1 * width + x1) * bytesPerPixel;
             // Set pixel to white
+            if(!(y1 < 0 || x1 < 0 || y1 >= height-1 || x1 >= width-1)){
             imageData[index] = 255;   // Red
             imageData[index + 1] = 255; // Green
             imageData[index + 2] = 255; // Blue
+            }
 
-            if (x1 == x2 && y1 == y2) break;
+            if (x1 == x2 && y1 == y2){
+                break;
+            }
             int e2 = 2 * err;
             if (e2 > -dy) {
                 err -= dy;
@@ -75,6 +79,7 @@ public:
                 err += dx;
                 y1 += sy;
             }
+            //std::cout << "a";
         }
     }
 
