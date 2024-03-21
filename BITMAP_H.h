@@ -47,7 +47,7 @@ public:
         delete[] imageData;
     }
 
-    void drawLine(float fx1, float fy1,float fx2, float fy2) {
+    void drawLine(float fx1, float fy1, float fx2, float fy2) {
         int x1 = fx1*width/2 + width/2;
         int x2 = fx2*width/2 + width/2;
         int y1 = fy1*height/2 + height/2;
