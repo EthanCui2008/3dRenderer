@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 
+//probably should change such that it returns the 2d matrix itself, sadly I do not understand pointers very well
+//Matrix Multiplication Function
 void matmul(float* matrix1, int rows1, int cols1, float* matrix2, int rows2, int cols2, float* result) {
     if (cols1 != rows2) {
         std::cout << "Dumbass" << std::endl;
@@ -28,20 +30,25 @@ void copy(float* source, float* destination, int rows, int cols) {
     }
 }
 
-void xrotate(float* matrix1, int rows1, int xdeg, float* result){
+void matmul_modify(float* original, int rows_o, int cols_o, float* modifier, int rows_m, int cols_m) {
+    float original_copy[rows_o][cols_o];
+    copy(original, *original_copy, rows_o, cols_o);
+    matmul(*original_copy, rows_o, cols_o, modifier, rows_m, cols_m, original);
+}
+
+void xrotate(float* matrix1, int rows1, int xdeg){
     float xRad = xdeg * M_PI / 180.0;
     float sinX = std::sin(xRad); float cosX = std::cos(xRad);
-
     float xRotation[4][4] = {
         {1, 0, 0, 0},
         {0, cosX, sinX, 0},
         {0, -sinX, cosX, 0},
         {0, 0, 0, 1}
     };
-    matmul(matrix1, rows1, 4, *xRotation, 4, 4, result);
+    matmul_modify(matrix1, rows1, 4, *xRotation, 4, 4);
 }
 
-void yrotate(float* matrix1, int rows1, int ydeg, float* result){
+void yrotate(float* matrix1, int rows1, int ydeg){
     float yRad = ydeg * M_PI / 180.0;
     float sinY = std::sin(yRad); float cosY = std::cos(yRad);
 
@@ -51,21 +58,10 @@ void yrotate(float* matrix1, int rows1, int ydeg, float* result){
         {sinY, 0, cosY, 0},
         {0, 0, 0, 1}
     };
-
-    matmul(matrix1, rows1, 4, *yRotation, 4, 4, result);
+    matmul_modify(matrix1, rows1, 4, *yRotation, 4, 4);
 }
 
-void move(float* matrix1, int rows1, float x, float y, float z, float* result){
-    float move[4][4] = {
-        {1, 0, 0, 0},
-        {0, 1, 0, 0},
-        {0, 0, 1, 0},
-        {x, y, z, 1}
-    };
-
-    matmul(matrix1, rows1, 4, *move, 4, 4, result);
-}
-void zrotate(float* matrix1, int rows1, int zdeg, float* result){
+void zrotate(float* matrix1, int rows1, int zdeg){
     float zRad = zdeg * M_PI / 180.0;
     float sinZ = std::sin(zRad); float cosZ = std::cos(zRad);
 
@@ -75,26 +71,47 @@ void zrotate(float* matrix1, int rows1, int zdeg, float* result){
         {0, 0, 1, 0},
         {0, 0, 0, 1}
     };
-    matmul(matrix1, rows1, 4, *zRotation, 4, 4, result);
+    matmul_modify(matrix1, rows1, 4, *zRotation, 4, 4);
 }
 
-void perstrans(float* matrix1, int rows1, float n, float f, float* result){
-    float project[4][4] = {
-        {n, 0, 0, 0},
-        {0, n, 0, 0},
-        {0, 0, (f+n), 1},
-        {0, 0, -1*f*n, 0}
-    }; //not actually needed because we don't keep track of object stacking
-    matmul(matrix1, rows1, 4, *project, 4, 4, result);
+void move(float* matrix1, int rows1, float x, float y, float z){
+    float move[4][4] = {
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {x, y, z, 1}
+    };
+    matmul_modify(matrix1, rows1, 4, *move, 4, 4);
 }
 
-void scale(float* matrix1, int rows1, float x, float y, float z, float* result){
+void scale(float* matrix1, int rows1, float x, float y, float z){
     float scale[4][4] = {
         {x, 0, 0, 0},
         {0, y, 0, 0},
         {0, 0, z, 0},
         {0, 0, 0, 1}
     };
-    matmul(matrix1, rows1, 4, *scale, 4, 4, result);
+    matmul_modify(matrix1, rows1, 4, *scale, 4, 4);
 }
-#endif /* CNUMPP_H i hate being called smart it makes me feel even worse about how washed up and wasted my life is :sob: */
+
+void viewvol(float* matrix1, int rows1, float r, float l, float b, float t, float f, float n){
+    float view[4][4] = {
+        {2/(r-l), 0, 0, 0},
+        {0, 2/(b-t), 0, 0},
+        {0, 0, 2/(f-n), 0},
+        {-1*(r+l)/(r-l), -1*(b+t)/(b-t), -1*n/(f-n), 1}
+    }; 
+    matmul_modify(matrix1, rows1, 4, *view, 4, 4);
+}
+
+void perstrans(float* matrix1, int rows1, float n, float f){
+    float project[4][4] = {
+        {n, 0, 0, 0},
+        {0, n, 0, 0},
+        {0, 0, (f+n), 1},
+        {0, 0, -1*f*n, 0}
+    }; //not actually needed because we don't keep track of object stacking
+    matmul_modify(matrix1, rows1, 4, *project, 4, 4);
+}
+
+#endif CNUMPP_H
