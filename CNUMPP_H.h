@@ -4,6 +4,8 @@
 #include <iostream>
 #include <cmath>
 
+#include "Point3D.h"
+
 //probably should change such that it returns the 2d matrix itself, sadly I do not understand pointers very well
 //Matrix Multiplication Function
 void matmul(float* matrix1, int rows1, int cols1, float* matrix2, int rows2, int cols2, float* result) {
@@ -36,7 +38,38 @@ void matmul_modify(float* original, int rows_o, int cols_o, float* modifier, int
     matmul(*original_copy, rows_o, cols_o, modifier, rows_m, cols_m, original);
 }
 
-void xrotate(float* matrix1, int rows1, int xdeg){
+void rotateAroundX(Vector3D& v, float deg) {
+    float theta = deg * (M_PI / 180.0f);
+    float cosTheta = std::cos(theta);
+    float sinTheta = std::sin(theta);
+
+    float originalY = v.y;
+    v.y = originalY * cosTheta - v.z * sinTheta;
+    v.z = originalY * sinTheta + v.z * cosTheta;
+}
+
+void rotateAroundY(Vector3D& v, float deg) {
+    float theta = deg * (M_PI / 180.0f);
+    float cosTheta = std::cos(theta);
+    float sinTheta = std::sin(theta);
+
+    float originalX = v.x;
+    v.x = originalX * cosTheta + v.z * sinTheta;
+    v.z = -originalX * sinTheta + v.z * cosTheta;
+}
+
+void rotateAroundZ(Vector3D& v, float deg) {
+    float theta = deg * (M_PI / 180.0f);
+    float cosTheta = std::cos(theta);
+    float sinTheta = std::sin(theta);
+
+    float originalX = v.x;
+    v.x = originalX * cosTheta - v.y * sinTheta;
+    v.y = originalX * sinTheta + v.y * cosTheta;
+}
+
+void xrotate(float* matrix1, int rows1, int xdeg, Vector3D& v){
+    //rotateAroundX(v, xdeg);
     float xRad = xdeg * M_PI / 180.0;
     float sinX = std::sin(xRad); float cosX = std::cos(xRad);
     float xRotation[4][4] = {
@@ -48,7 +81,8 @@ void xrotate(float* matrix1, int rows1, int xdeg){
     matmul_modify(matrix1, rows1, 4, *xRotation, 4, 4);
 }
 
-void yrotate(float* matrix1, int rows1, int ydeg){
+void yrotate(float* matrix1, int rows1, int ydeg, Vector3D& v){
+    //rotateAroundY(v, ydeg);
     float yRad = ydeg * M_PI / 180.0;
     float sinY = std::sin(yRad); float cosY = std::cos(yRad);
 
@@ -61,7 +95,8 @@ void yrotate(float* matrix1, int rows1, int ydeg){
     matmul_modify(matrix1, rows1, 4, *yRotation, 4, 4);
 }
 
-void zrotate(float* matrix1, int rows1, int zdeg){
+void zrotate(float* matrix1, int rows1, int zdeg, Vector3D& v){
+    //rotateAroundZ(v, zdeg);
     float zRad = zdeg * M_PI / 180.0;
     float sinZ = std::sin(zRad); float cosZ = std::cos(zRad);
 

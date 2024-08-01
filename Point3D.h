@@ -3,6 +3,8 @@
 
 #include <cmath>
 
+#include "CNUMPP_H.h"
+
 struct Vector3D {
     float x;
     float y;

@@ -38,14 +38,7 @@ private:
         outputFile.write(reinterpret_cast<char*>(bmpHeader), sizeof(bmpHeader));
     }
 
-    void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
-        if (x >= 0 && x < width && y >= 0 && y < height) {
-            int index = (y * width + x) * bytesPerPixel;
-            imageData[index] = r;
-            imageData[index + 1] = g;
-            imageData[index + 2] = b;
-        }
-    }
+    
 
     void transPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, float a) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
@@ -66,6 +59,14 @@ private:
     }
 
 public:
+    void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            int index = (y * width + x) * bytesPerPixel;
+            imageData[index] = r;
+            imageData[index + 1] = g;
+            imageData[index + 2] = b;
+        }
+    }
     Bitmap(int w, int h) : width(w), height(h), bytesPerPixel(3) {
         padding = (4 - (width * bytesPerPixel) % 4) % 4;
         imageData = new unsigned char[(width * bytesPerPixel + padding) * height]();
@@ -75,29 +76,44 @@ public:
         delete[] imageData;
     }
 
-    void drawFacet(float fx1, float fy1, float fx2, float fy2, float fx3, float fy3, uint8_t r, uint8_t g, uint8_t b) {
-        Point p1 = { fx1 * width / 2 + width / 2, fy1 * height / 2 + height / 2 };
-        Point p2 = { fx2 * width / 2 + width / 2, fy2 * height / 2 + height / 2 };
-        Point p3 = { fx3 * width / 2 + width / 2, fy3 * height / 2 + height / 2 };
+    void drawFacet(float fx1, float fy1, float fx2, float fy2, float fx3, float fy3, uint8_t r, uint8_t g, uint8_t b, int j) {
+    // Convert normalized coordinates to pixel coordinates
+    Point p1 = { fx1 * width / 2 + width / 2, fy1 * height / 2 + height / 2 };
+    Point p2 = { fx2 * width / 2 + width / 2, fy2 * height / 2 + height / 2 };
+    Point p3 = { fx3 * width / 2 + width / 2, fy3 * height / 2 + height / 2 };
 
-        Point min = { std::min({ p1.x, p2.x, p3.x }), std::min({ p1.y, p2.y, p3.y }) };
-        Point max = { std::max({ p1.x, p2.x, p3.x }), std::max({ p1.y, p2.y, p3.y }) };
+    // Find the bounding box of the triangle
+    Point min = { std::min({ p1.x, p2.x, p3.x }), std::min({ p1.y, p2.y, p3.y }) };
+    Point max = { std::max({ p1.x, p2.x, p3.x }), std::max({ p1.y, p2.y, p3.y }) };
 
-        for (int y = min.y; y <= max.y; ++y) {
-            for (int x = min.x; x <= max.x; ++x) {
-                Point p = { (float)x, (float)y };
-                int w0 = edgeFunction(p2, p3, p);
-                int w1 = edgeFunction(p3, p1, p);
-                int w2 = edgeFunction(p1, p2, p);
+    // Ensure bounding box is within image bounds
+    min.x = std::max(0.0f, min.x);
+    min.y = std::max(0.0f, min.y);
+    max.x = std::min((float)width - 1, max.x);
+    max.y = std::min((float)height - 1, max.y);
 
-                if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                    setPixel(x, y, r, g, b);
-                }
+    for (int y = static_cast<int>(min.y); y <= static_cast<int>(max.y); ++y) {
+        for (int x = static_cast<int>(min.x); x <= static_cast<int>(max.x); ++x) {
+            Point p = { static_cast<float>(x), static_cast<float>(y) };
+            
+            // Calculate barycentric coordinates
+            int w0 = edgeFunction(p2, p3, p);
+            int w1 = edgeFunction(p3, p1, p);
+            int w2 = edgeFunction(p1, p2, p);
+
+            // Check if the point is inside the triangle
+            if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                setPixel(x, y, r, g, b);
             }
         }
     }
-
-    void drawLine(float fx1, float fy1, float fx2, float fy2) {
+}
+    void drawFacetedge(float fx1, float fy1, float fx2, float fy2, float fx3, float fy3, uint8_t r, uint8_t g, uint8_t b) {
+        drawLine(fx1, fy1, fx2, fy2, r, g, b);
+        drawLine(fx2, fy2, fx3, fy3, r, g, b);
+        drawLine(fx3, fy3, fx1, fy1, r, g, b);
+    }
+    void drawLine(float fx1, float fy1, float fx2, float fy2, uint8_t r, uint8_t g, uint8_t b) {
         int x1 = fx1 * width / 2 + width / 2;
         int x2 = fx2 * width / 2 + width / 2;
         int y1 = fy1 * height / 2 + height / 2;
@@ -111,9 +127,9 @@ public:
         while (true) {
             int index = (y1 * width + x1) * bytesPerPixel;
             if (!(y1 < 0 || x1 < 0 || y1 >= height - 1 || x1 >= width - 1)) {
-                imageData[index] = 255;   // Red
-                imageData[index + 1] = 255; // Green
-                imageData[index + 2] = 255; // Blue
+                imageData[index] = r;   // Red
+                imageData[index + 1] = g; // Green
+                imageData[index + 2] = b; // Blue
             }
             if (x1 == x2 && y1 == y2) {
                 break;
