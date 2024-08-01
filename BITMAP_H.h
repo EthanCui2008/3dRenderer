@@ -159,7 +159,7 @@ public:
 
         // Write BMP pixel data
         outputFile.write(reinterpret_cast<char*>(imageData), (width * bytesPerPixel + padding) * height);
-
+        std::cout << "Image Created";
         // Close the image file
         outputFile.close();
     }
