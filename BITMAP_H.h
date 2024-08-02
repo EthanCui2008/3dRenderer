@@ -6,8 +6,10 @@
 #include <iostream>
 #include <algorithm>
 
+#include "BITMAP_H.h"
+#include "CNUMPP_H.h"
+#include "STLREADER_H.h"
 #include "Point3D.h"
-
 
 class Bitmap {
 private:
@@ -116,7 +118,7 @@ public:
                 int w2 = edgeFunction(p1, p2, p);
 
                 if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                    setPixel(x, y, r, g, b);
+                    transPixel(x, y, r, g, b, 0.3);
                 }
             }
         }

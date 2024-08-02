@@ -4,8 +4,10 @@
 #include <iostream>
 #include <cmath>
 
+#include "BITMAP_H.h"
+#include "CNUMPP_H.h"
+#include "STLREADER_H.h"
 #include "Point3D.h"
-
 
 //probably should change such that it returns the 2d matrix itself, sadly I do not understand pointers very well
 //Matrix Multiplication Function
@@ -151,4 +153,4 @@ void perstrans(float* matrix1, int rows1, float n, float f){
     matmul_modify(matrix1, rows1, 4, *project, 4, 4);
 }
 
-#endif CNUMPP_H
+#endif

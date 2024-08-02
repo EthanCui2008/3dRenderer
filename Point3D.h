@@ -1,11 +1,12 @@
-#ifndef POINT3D
-#define POINT3D
+#ifndef POINT3D_H
+#define POINT3D_H
 
 #include <cmath>
 
-#include "CNUMPP_H.h"
 #include "BITMAP_H.h"
+#include "CNUMPP_H.h"
 #include "STLREADER_H.h"
+#include "Point3D.h"
 
 struct Vector3D {
     float x;

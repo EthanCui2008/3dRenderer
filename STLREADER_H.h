@@ -1,5 +1,5 @@
-#ifndef STLREADER_H 
-#define STLREADER_H 
+#ifndef STLREADER_H
+#define STLREADER_H
 
 #include <cstdint>
 #include <iostream>
@@ -10,13 +10,17 @@
 #include <array>
 #include <regex>
 
+#include "BITMAP_H.h"
+#include "CNUMPP_H.h"
+#include "STLREADER_H.h"
 #include "Point3D.h"
 
 std::string readFileIntoString(const std::string& filePath) {
     std::ifstream file(filePath);
 
     if (!file.is_open()) {
-        std::cout << "File is not here" << std::endl;
+        std::cerr << "File could not be opened: " << filePath << std::endl;
+        return ""; // Return an empty string if file can't be opened
     }
 
     std::stringstream buffer;
@@ -24,8 +28,7 @@ std::string readFileIntoString(const std::string& filePath) {
     return buffer.str();
 }
 
-void parseSTL(const std::string& stlContent, std::vector<std::array<Vector3D, 4>>& facets){
-
+void parseSTL(const std::string& stlContent, std::vector<std::array<Vector3D, 4>>& facets) {
     std::regex facetRegex(R"(facet normal\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?))");
     std::regex vertexRegex(R"(vertex\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?))");
 
@@ -35,32 +38,23 @@ void parseSTL(const std::string& stlContent, std::vector<std::array<Vector3D, 4>
     auto vertexBegin = std::sregex_iterator(stlContent.begin(), stlContent.end(), vertexRegex);
     auto vertexEnd = std::sregex_iterator();
 
-    //std::cout << "solid " << std::endl;
     for (auto it = facetBegin; it != facetEnd; ++it) {
         std::smatch match = *it;
         std::array<Vector3D, 4> facetArray;
 
-        facetArray[0] = Vector3D(stof(match[1]),stof(match[2]),stof(match[3]));
-
-        //std::cout << "  facet normal " << facetArray[0].x << " " << facetArray[0].y << " " << facetArray[0].z << std::endl;
-        //std::cout << "    outer loop" << std::endl;
+        facetArray[0] = Vector3D(std::stof(match[1].str()), std::stof(match[2].str()), std::stof(match[3].str()));
 
         auto v_it = vertexBegin;
         for (int i = 0; i < 3; ++i) {
             if (v_it != vertexEnd) {
                 std::smatch vertexMatch = *v_it;
-
-                facetArray[i+1] = Vector3D(stof(vertexMatch[1]),stof(vertexMatch[2]),stof(vertexMatch[3]));
-
-                //std::cout << "      vertex " << facetArray[i+1].x << " " << facetArray[i+1].y << " " << facetArray[i+1].z << std::endl;
+                facetArray[i + 1] = Vector3D(std::stof(vertexMatch[1].str()), std::stof(vertexMatch[2].str()), std::stof(vertexMatch[3].str()));
                 ++v_it;
             }
         }
         vertexBegin = v_it;
-        //std::cout << "    endloop" << std::endl;
         facets.push_back(facetArray);
     }
-    //std::cout << "endsolid  " << std::endl;
 }
 
-#endif STLREADER_H
+#endif // STLREADER_H
