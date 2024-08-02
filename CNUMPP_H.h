@@ -6,6 +6,7 @@
 
 #include "Point3D.h"
 
+
 //probably should change such that it returns the 2d matrix itself, sadly I do not understand pointers very well
 //Matrix Multiplication Function
 void matmul(float* matrix1, int rows1, int cols1, float* matrix2, int rows2, int cols2, float* result) {
@@ -69,7 +70,7 @@ void rotateAroundZ(Vector3D& v, float deg) {
 }
 
 void xrotate(float* matrix1, int rows1, int xdeg, Vector3D& v){
-    //rotateAroundX(v, xdeg);
+    rotateAroundX(v, xdeg);
     float xRad = xdeg * M_PI / 180.0;
     float sinX = std::sin(xRad); float cosX = std::cos(xRad);
     float xRotation[4][4] = {
@@ -79,10 +80,11 @@ void xrotate(float* matrix1, int rows1, int xdeg, Vector3D& v){
         {0, 0, 0, 1}
     };
     matmul_modify(matrix1, rows1, 4, *xRotation, 4, 4);
+    
 }
 
 void yrotate(float* matrix1, int rows1, int ydeg, Vector3D& v){
-    //rotateAroundY(v, ydeg);
+    rotateAroundY(v, ydeg);
     float yRad = ydeg * M_PI / 180.0;
     float sinY = std::sin(yRad); float cosY = std::cos(yRad);
 
@@ -96,7 +98,7 @@ void yrotate(float* matrix1, int rows1, int ydeg, Vector3D& v){
 }
 
 void zrotate(float* matrix1, int rows1, int zdeg, Vector3D& v){
-    //rotateAroundZ(v, zdeg);
+    rotateAroundZ(v, zdeg);
     float zRad = zdeg * M_PI / 180.0;
     float sinZ = std::sin(zRad); float cosZ = std::cos(zRad);
 
