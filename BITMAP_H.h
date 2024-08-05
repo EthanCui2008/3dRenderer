@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 #include "BITMAP_H.h"
 #include "CNUMPP_H.h"
@@ -18,6 +19,7 @@ private:
     int bytesPerPixel;
     int padding;
     unsigned char* imageData;
+    std::vector<std::vector<float>> zBuffer;  // 2D array for z-level data
 
     void createHeader(std::ostream& outputFile) {
         const int imageSize = (width * bytesPerPixel + padding) * height;
@@ -35,7 +37,7 @@ private:
             24, 0,
             0, 0, 0, 0,
             (unsigned char) (imageSize), (unsigned char) (imageSize >> 8), (unsigned char) (imageSize >> 16), (unsigned char) (imageSize >> 24),
-            0, 0, 0, 0, 
+            0, 0, 0, 0,
             0, 0, 0, 0
         };
 
@@ -43,14 +45,12 @@ private:
         outputFile.write(reinterpret_cast<char*>(bmpHeader), sizeof(bmpHeader));
     }
 
-    
-
     void transPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, float a) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
             int index = (y * width + x) * bytesPerPixel;
-            imageData[index] += r*a;
-            imageData[index + 1] += g*a;
-            imageData[index + 2] += b*a;
+            imageData[index] += r * a;
+            imageData[index + 1] += g * a;
+            imageData[index + 2] += b * a;
         }
     }
 
@@ -64,39 +64,47 @@ private:
     }
 
 public:
-    void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
-        if (x >= 0 && x < width && y >= 0 && y < height) {
-            int index = (y * width + x) * bytesPerPixel;
-            imageData[index] = r;
-            imageData[index + 1] = g;
-            imageData[index + 2] = b;
-        }
-    }
     Bitmap(int w, int h) : width(w), height(h), bytesPerPixel(3) {
         padding = (4 - (width * bytesPerPixel) % 4) % 4;
         imageData = new unsigned char[(width * bytesPerPixel + padding) * height]();
+        zBuffer = std::vector<std::vector<float>>(height, std::vector<float>(width, std::numeric_limits<float>::max()));
     }
 
     ~Bitmap() {
         delete[] imageData;
     }
-    void drawallFacet(Vector3D p1, Vector3D p2, Vector3D p3, uint8_t r, uint8_t g, uint8_t b){
+
+    void setPixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, int z) {
+        if (x >= 0 && x < width && y >= 0 && y < height && z < zBuffer[x][y]) {
+            int index = (y * width + x) * bytesPerPixel;
+            
+            imageData[index] = r;
+            imageData[index + 1] = g;
+            imageData[index + 2] = b;
+            zBuffer[x][y] = z; 
+        }
+    }
+
+    void drawallFacet(Vector3D p1, Vector3D p2, Vector3D p3, uint8_t r, uint8_t g, uint8_t b) {
         float fx1 = p1.x;
-        float fy1 = p1.y; 
+        float fy1 = p1.y;
         float fx2 = p2.x;
         float fy2 = p2.y;
         float fx3 = p3.x;
         float fy3 = p3.y;
-        drawFacet(fx1, fy1, fx2, fy2, fx3, fy3, r, g, b);
-        drawFacet(fx1, fy1, fx3, fy3, fx2, fy2, r, g, b);
 
-        drawFacet(fx2, fy2, fx1, fy1, fx3, fy3, r, g, b);
-        drawFacet(fx2, fy2, fx3, fy3, fx1, fy1, r, g, b);
+        int z = int((p1.z+p2.z+p3.z)/3);
+        drawFacet(fx1, fy1, fx2, fy2, fx3, fy3, z, r, g, b);
+        drawFacet(fx1, fy1, fx3, fy3, fx2, fy2, z, r, g, b);
 
-        drawFacet(fx3, fy3, fx2, fy2, fx1, fy1, r, g, b);
-        drawFacet(fx3, fy3, fx1, fy1, fx2, fy2, r, g, b);
+        drawFacet(fx2, fy2, fx1, fy1, fx3, fy3, z, r, g, b);
+        drawFacet(fx2, fy2, fx3, fy3, fx1, fy1, z, r, g, b);
+
+        drawFacet(fx3, fy3, fx2, fy2, fx1, fy1, z, r, g, b);
+        drawFacet(fx3, fy3, fx1, fy1, fx2, fy2, z, r, g, b);
     }
-    void drawFacet(float fx1, float fy1, float fx2, float fy2, float fx3, float fy3, uint8_t r, uint8_t g, uint8_t b) {
+
+    void drawFacet(float fx1, float fy1, float fx2, float fy2, float fx3, float fy3, int z, uint8_t r, uint8_t g, uint8_t b) {
         Point p1 = { fx1 * width / 2 + width / 2, fy1 * height / 2 + height / 2 };
         Point p2 = { fx2 * width / 2 + width / 2, fy2 * height / 2 + height / 2 };
         Point p3 = { fx3 * width / 2 + width / 2, fy3 * height / 2 + height / 2 };
@@ -112,20 +120,21 @@ public:
         for (int y = static_cast<int>(min.y); y <= static_cast<int>(max.y); ++y) {
             for (int x = static_cast<int>(min.x); x <= static_cast<int>(max.x); ++x) {
                 Point p = { static_cast<float>(x), static_cast<float>(y) };
-                
+
                 int w0 = edgeFunction(p2, p3, p);
                 int w1 = edgeFunction(p3, p1, p);
                 int w2 = edgeFunction(p1, p2, p);
 
                 if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-                    transPixel(x, y, r, g, b, 0.3);
+                    setPixel(x, y, r, g, b, z);
                 }
             }
         }
     }
+
     void drawFacetedge(Vector3D p1, Vector3D p2, Vector3D p3, uint8_t r, uint8_t g, uint8_t b) {
         float fx1 = p1.x;
-        float fy1 = p1.y; 
+        float fy1 = p1.y;
         float fx2 = p2.x;
         float fy2 = p2.y;
         float fx3 = p3.x;
@@ -135,6 +144,7 @@ public:
         drawLine(fx2, fy2, fx3, fy3, r, g, b);
         drawLine(fx3, fy3, fx1, fy1, r, g, b);
     }
+
     void drawLine(float fx1, float fy1, float fx2, float fy2, uint8_t r, uint8_t g, uint8_t b) {
         int x1 = fx1 * width / 2 + width / 2;
         int x2 = fx2 * width / 2 + width / 2;
@@ -176,16 +186,12 @@ public:
             return;
         }
 
-        // Write BMP header
         createHeader(outputFile);
 
-        // Write BMP pixel data
         outputFile.write(reinterpret_cast<char*>(imageData), (width * bytesPerPixel + padding) * height);
         std::cout << "Image Created";
-        // Close the image file
         outputFile.close();
     }
 };
 
-#endif // BITMAP_H
-
+#endif
