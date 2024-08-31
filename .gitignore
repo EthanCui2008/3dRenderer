@@ -1,5 +1,9 @@
 #Vscode compilation stuff
 .vscode/
 
+#Build Folder
+.build/
+
 #For creation of Gifs, not formalized, also would cause git to whine
 .gifiles/
+
