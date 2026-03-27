@@ -10,17 +10,14 @@
 #include <array>
 #include <regex>
 
-#include "BITMAP_H.h"
-#include "CNUMPP_H.h"
-#include "STLREADER_H.h"
 #include "Point3D.h"
 
-std::string readFileIntoString(const std::string& filePath) {
+inline std::string readFileIntoString(const std::string& filePath) {
     std::ifstream file(filePath);
 
     if (!file.is_open()) {
         std::cerr << "File could not be opened: " << filePath << std::endl;
-        return ""; // Return an empty string if file can't be opened
+        return "";
     }
 
     std::stringstream buffer;
@@ -28,7 +25,7 @@ std::string readFileIntoString(const std::string& filePath) {
     return buffer.str();
 }
 
-void parseSTL(const std::string& stlContent, std::vector<std::array<Vector3D, 4>>& facets) {
+inline void parseSTL(const std::string& stlContent, std::vector<std::array<Vector3D, 4>>& facets) {
     std::regex facetRegex(R"(facet normal\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?))");
     std::regex vertexRegex(R"(vertex\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?)\s+([-+]?[\d.]+(?:[eE][-+]?\d+)?))");
 
